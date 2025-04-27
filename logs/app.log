@@ -1,0 +1,4 @@
+2025-04-27 18:41:04,559 - root - INFO - Starting Flask application
+2025-04-27 18:41:04,568 - werkzeug - WARNING -  * Debugger is active!
+2025-04-27 18:41:04,570 - werkzeug - INFO -  * Debugger PIN: 186-704-024
+2025-04-27 18:42:38,643 - werkzeug - INFO -  * Detected change in 'D:\\VSCode\\Python\\face_recognition_attendance_system\\app.py', reloading
