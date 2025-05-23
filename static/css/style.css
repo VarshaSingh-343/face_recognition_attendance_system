@@ -1,0 +1,55 @@
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 1rem 0;
+}
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+.login-btn {
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+/* Add more shared styles as needed */
+.system-image {
+    padding-top: 20px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    height: 300px;
+    width: 90%;
+    /* object-fit: cover; */
+}
+.system-image:hover {
+    transform: scale(1.02);
+}
+.content-section {
+    background-color: #f8f9fa;
+    padding: 2rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    height: auto;
+    overflow-y: auto;
+}
+.content-section::-webkit-scrollbar {
+    width: 8px;
+}
+.content-section::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+.content-section::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+.content-section::-webkit-scrollbar-thumb:hover {
+    background: #555;
+} 

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Users</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .action-buttons .btn {
+            margin-right: 5px;
+        }
+        .table-responsive {
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        .btn-delete {
+            transition: all 0.3s ease;
+        }
+        .btn-delete:hover {
+            transform: scale(1.05);
+        }
+        .attendance-modal .modal-dialog {
+            max-width: 800px;
+        }
+        .attendance-table {
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Manage Users</a>
+        <div class="d-flex">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-light">Back to Dashboard</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Registered Users</h2>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Registration Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.registration_date }}</td>
+                    <td class="action-buttons">
+                        <button type="button" class="btn btn-info btn-sm" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#attendanceModal{{ user.id }}">
+                            <i class="bi bi-calendar-check"></i> View Attendance
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm btn-delete" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#deleteModal{{ user.id }}">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Attendance Modals -->
+{% for user in users %}
+<div class="modal fade attendance-modal" id="attendanceModal{{ user.id }}" tabindex="-1" aria-labelledby="attendanceModalLabel{{ user.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="attendanceModalLabel{{ user.id }}">Attendance History - {{ user.username }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped attendance-table">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceBody{{ user.id }}">
+                            <tr>
+                                <td colspan="2" class="text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Loading attendance records...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modals -->
+<div class="modal fade" id="deleteModal{{ user.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ user.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel{{ user.id }}">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete user "{{ user.username }}"?
+                This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('manage_users.delete_user', user_id=user.id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Auto dismiss flash messages after 5 seconds
+    setTimeout(function() {
+        var alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            var bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000);
+
+    // Function to load attendance data when modal is shown
+    document.querySelectorAll('.attendance-modal').forEach(modal => {
+        modal.addEventListener('show.bs.modal', function (event) {
+            const userId = this.id.replace('attendanceModal', '');
+            const attendanceBody = document.getElementById(`attendanceBody${userId}`);
+            
+            // Show loading state
+            attendanceBody.innerHTML = `
+                <tr>
+                    <td colspan="2" class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading attendance records...</p>
+                    </td>
+                </tr>
+            `;
+            
+            // Fetch attendance data
+            fetch(`/manage-users/attendance/${userId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.length === 0) {
+                        attendanceBody.innerHTML = '<tr><td colspan="2" class="text-center">No attendance records found</td></tr>';
+                    } else {
+                        // Sort records by date and time (newest first)
+                        data.sort((a, b) => {
+                            const dateA = new Date(a.date.split('-').reverse().join('-') + ' ' + a.time);
+                            const dateB = new Date(b.date.split('-').reverse().join('-') + ' ' + b.time);
+                            return dateB - dateA;
+                        });
+
+                        // Clear and populate table
+                        attendanceBody.innerHTML = '';
+                        data.forEach(record => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${record.date}</td>
+                                <td>${record.time}</td>
+                            `;
+                            attendanceBody.appendChild(row);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching attendance data:', error);
+                    attendanceBody.innerHTML = '<tr><td colspan="2" class="text-center text-danger">Error loading attendance data</td></tr>';
+                });
+        });
+    });
+</script>
+
+</body>
+</html> 

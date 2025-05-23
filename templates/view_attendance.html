@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance Records</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .filter-controls {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-export {
+            transition: all 0.3s ease;
+        }
+        .btn-export:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Attendance Records</a>
+        <div class="d-flex">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-light">Back to Dashboard</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Attendance Records</h2>
+    
+    <!-- Filter and Export Controls -->
+    <div class="row mb-4 filter-controls">
+        <div class="col-md-6">
+            <form action="{{ url_for('attendance.view_attendance') }}" method="GET" class="d-flex align-items-center">
+                <div class="me-2">
+                    <label for="date" class="form-label">Filter by Date:</label>
+                </div>
+                <div class="me-2">
+                    <input type="date" id="date" name="date" class="form-control">
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-funnel"></i> Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6 text-end">
+            <form action="{{ url_for('attendance.export_attendance') }}{% if request.args.get('date') %}?date={{ request.args.get('date') }}{% endif %}" method="POST">
+                <input type="hidden" name="date" value="{{ request.args.get('date', '') }}">
+                <button type="submit" class="btn btn-success btn-export">
+                    <i class="bi bi-download"></i> Export Attendance
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {% if attendance_records %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped" id="attendanceTable">
+            <thead class="table-dark">
+                <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in attendance_records %}
+                <tr>
+                    <td>{{ record['User ID'] }}</td>
+                    <td>{{ record['Name'] }}</td>
+                    <td>{{ record['Date'] }}</td>
+                    <td>{{ record['Time'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="text-center">No attendance records to show.</p>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Function to sort table by date and time (newest first)
+    function sortAttendanceTable() {
+        const table = document.getElementById('attendanceTable');
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+
+        // Sort rows by date and time
+        rows.sort((a, b) => {
+            const dateA = a.cells[2].textContent; // Date column
+            const timeA = a.cells[3].textContent; // Time column
+            const dateB = b.cells[2].textContent;
+            const timeB = b.cells[3].textContent;
+
+            // Convert to Date objects for comparison
+            const dateTimeA = new Date(dateA.split('-').reverse().join('-') + ' ' + timeA);
+            const dateTimeB = new Date(dateB.split('-').reverse().join('-') + ' ' + timeB);
+
+            return dateTimeB - dateTimeA; // Sort in descending order (newest first)
+        });
+
+        // Clear and re-append sorted rows
+        tbody.innerHTML = '';
+        rows.forEach(row => tbody.appendChild(row));
+    }
+
+    // Sort the table when the page loads
+    document.addEventListener('DOMContentLoaded', sortAttendanceTable);
+</script>
+</body>
+</html>
