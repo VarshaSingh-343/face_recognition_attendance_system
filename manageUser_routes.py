@@ -94,7 +94,7 @@ def delete_user(user_id):
                 shutil.rmtree(folder_path)
                 user_found = True
                 break
-    
+
     if user_found:
         flash(f'User {user_id} has been successfully deleted. Please train the model again for accurate face recognition.', 'success')
         # Redirect to train model page
